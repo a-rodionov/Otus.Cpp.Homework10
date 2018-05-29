@@ -5,6 +5,8 @@
 #include "FileOutput.h"
 #include "CommandProcessor.h"
 
+
+
 int main(int argc, char const* argv[])
 {
   try
@@ -34,15 +36,32 @@ int main(int argc, char const* argv[])
     }
 
     auto commandProcessor = std::make_unique<CommandProcessor>();
-    std::shared_ptr<Storage> storage = std::make_shared<Storage>(block_size);
-    std::shared_ptr<IOutput> consoleOutput = std::make_shared<ConsoleOutput>(std::cout);
-    std::shared_ptr<IOutput> fileOutput = std::make_shared<FileOutput>();
+    auto storage = std::make_shared<Storage>(block_size);
+    auto consoleOutput = std::make_shared<ConsoleOutput>(std::cout);
+    auto fileOutput = std::make_shared<FileOutput>(2);
 
     storage->Subscribe(consoleOutput);
     storage->Subscribe(fileOutput);
     commandProcessor->Subscribe(storage);
 
     commandProcessor->Process(std::cin);
+
+    auto console_hadlers = consoleOutput->StopWorkers();
+    auto file_hadlers = fileOutput->StopWorkers();
+
+    std::cout << "main поток - " << commandProcessor->GetProcessedLines() << " строк, "
+              << storage->GetStatisctics() << std::endl;
+
+    for(const auto& handler : console_hadlers) {
+      auto statistic = handler->GetStatisctics();
+      std::cout << "log поток - " << statistic << std::endl;
+    }
+
+    auto i{1};
+    for(const auto& handler : file_hadlers) {
+      auto statistic = handler->GetStatisctics();
+      std::cout << "file" << i++ << " поток - " << statistic << std::endl;
+    }
   }
   catch (const std::exception& e)
   {

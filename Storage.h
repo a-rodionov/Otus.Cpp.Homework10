@@ -3,8 +3,9 @@
 #include <chrono>
 #include "IStorage.h"
 #include "OutputObservable.h"
+#include "Statistics.h"
 
-class Storage : public IStorage, public OutputObservable
+class Storage : public IStorage, public OutputObservable, public BaseStatistics
 {
 public:
 
@@ -25,6 +26,8 @@ public:
 
   void Flush() override {
     if(!data.empty()) {
+      ++statistics.blocks;
+      statistics.commands += data.size();
       Output(timestamp, data);
       data.clear();
     }

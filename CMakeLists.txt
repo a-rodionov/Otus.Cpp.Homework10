@@ -8,6 +8,7 @@ endif()
 
 project(bulkmt VERSION 1.0.${PATCH_VERSION})
 
+find_package(Threads)
 find_package(Boost COMPONENTS unit_test_framework REQUIRED)
 
 # Создание целей
@@ -21,6 +22,10 @@ add_executable(bulkmt_test test.cpp)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_compile_options(-Wpedantic -Wall -Wextra)
+
+target_link_libraries(bulkmt
+  ${CMAKE_THREAD_LIBS_INIT}
+)
 
 target_compile_definitions(bulkmt_test PRIVATE BOOST_TEST_DYN_LINK)
 target_link_libraries(bulkmt_test 

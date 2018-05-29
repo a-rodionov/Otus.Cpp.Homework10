@@ -10,7 +10,7 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/test/included/unit_test.hpp>
 
-
+/*
 BOOST_AUTO_TEST_SUITE(test_suite_internals)
 
 BOOST_AUTO_TEST_CASE(infix_iterator)
@@ -334,3 +334,4 @@ BOOST_AUTO_TEST_CASE(file_output_to_locked_file)
 }
 
 BOOST_AUTO_TEST_SUITE_END()
+*/
