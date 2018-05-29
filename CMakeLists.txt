@@ -30,6 +30,7 @@ target_link_libraries(bulkmt
 target_compile_definitions(bulkmt_test PRIVATE BOOST_TEST_DYN_LINK)
 target_link_libraries(bulkmt_test 
   Boost::unit_test_framework
+  ${CMAKE_THREAD_LIBS_INIT}
 )
 
 install(TARGETS bulkmt RUNTIME DESTINATION bin)

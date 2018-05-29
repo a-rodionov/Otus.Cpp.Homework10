@@ -10,7 +10,7 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/test/included/unit_test.hpp>
 
-/*
+
 BOOST_AUTO_TEST_SUITE(test_suite_internals)
 
 BOOST_AUTO_TEST_CASE(infix_iterator)
@@ -61,12 +61,6 @@ BOOST_AUTO_TEST_CASE(observable)
   BOOST_CHECK_EQUAL(0, testObservable.GetSubscribersCount());
 }
 
-BOOST_AUTO_TEST_CASE(make_filename)
-{
-  size_t timestamp = 123;
-  BOOST_CHECK_EQUAL("bulk123.log", FileOutput::MakeFilename(timestamp));
-}
-
 BOOST_AUTO_TEST_SUITE_END()
 
 
@@ -85,7 +79,7 @@ struct initialized_command_processor
 
   std::unique_ptr<CommandProcessor> commandProcessor;
   std::shared_ptr<Storage> storage;
-  std::shared_ptr<IOutput> consoleOutput;
+  std::shared_ptr<ConsoleOutput> consoleOutput;
   std::ostringstream oss;
 };
 
@@ -105,6 +99,7 @@ BOOST_AUTO_TEST_CASE(flush_incomplete_block_by_end)
   std::istringstream iss(testData);
   
   commandProcessor->Process(iss);
+  consoleOutput->StopWorkers();
 
   BOOST_CHECK_EQUAL(oss.str(), result);
 }
@@ -133,6 +128,7 @@ BOOST_AUTO_TEST_CASE(new_block_size)
   std::istringstream iss(testData);
 
   commandProcessor->Process(iss);
+  consoleOutput->StopWorkers();
 
   BOOST_CHECK_EQUAL(oss.str(), result);
 }
@@ -154,6 +150,7 @@ BOOST_AUTO_TEST_CASE(flush_incomplete_block_by_new_block_size)
   std::istringstream iss(testData);
 
   commandProcessor->Process(iss);
+  consoleOutput->StopWorkers();
 
   BOOST_CHECK_EQUAL(oss.str(), result);
 }
@@ -176,6 +173,7 @@ BOOST_AUTO_TEST_CASE(flush_incomplete_block_by_closing_brace)
   std::istringstream iss(testData);
 
   commandProcessor->Process(iss);
+  consoleOutput->StopWorkers();
 
   BOOST_CHECK_EQUAL(oss.str(), result);
 }
@@ -198,6 +196,7 @@ BOOST_AUTO_TEST_CASE(ignore_nested_new_block_size)
   std::istringstream iss(testData);
 
   commandProcessor->Process(iss);
+  consoleOutput->StopWorkers();
   
   BOOST_CHECK_EQUAL(oss.str(), result);
 }
@@ -218,6 +217,7 @@ BOOST_AUTO_TEST_CASE(incomplete_new_block_size)
   std::istringstream iss(testData);
 
   commandProcessor->Process(iss);
+  consoleOutput->StopWorkers();
   
   BOOST_CHECK_EQUAL(oss.str(), result);
 }
@@ -240,6 +240,7 @@ BOOST_AUTO_TEST_CASE(command_after_brace_on_same_line_1)
   std::istringstream iss(testData);
 
   commandProcessor->Process(iss);
+  consoleOutput->StopWorkers();
 
   BOOST_CHECK_EQUAL(oss.str(), result);
 }
@@ -262,6 +263,7 @@ BOOST_AUTO_TEST_CASE(command_after_brace_on_same_line_2)
   std::istringstream iss(testData);
 
   commandProcessor->Process(iss);
+  consoleOutput->StopWorkers();
 
   BOOST_CHECK_EQUAL(oss.str(), result);
 }
@@ -280,22 +282,24 @@ BOOST_AUTO_TEST_CASE(brace_after_command_on_same_line)
   std::istringstream iss(testData);
 
   commandProcessor->Process(iss);
+  consoleOutput->StopWorkers();
 
   BOOST_CHECK_EQUAL(oss.str(), result);
 }
 
 BOOST_AUTO_TEST_CASE(file_output)
 {
-  FileOutput fileOutput;
+  FileOutputThreadHandler fileOutput;
   std::string result;
   std::string goodResult{"bulk: cmd1, cmd2, cmd3"};
   std::list<std::string> testData{"cmd1", "cmd2", "cmd3"};
-  size_t timestamp = 123;
-  auto filename = FileOutput::MakeFilename(timestamp);
+  size_t timestamp {123};
+  unsigned short counter {0};
+  auto filename = MakeFilename(timestamp, std::this_thread::get_id(), counter);
 
   std::remove(filename.c_str());  
 
-  fileOutput.Output(timestamp, testData);
+  fileOutput(std::make_pair(timestamp, testData));
   
   std::ifstream ifs{filename.c_str(), std::ifstream::in};
   BOOST_CHECK_EQUAL(false, ifs.fail());
@@ -313,12 +317,13 @@ BOOST_AUTO_TEST_CASE(file_output)
 
 BOOST_AUTO_TEST_CASE(file_output_to_locked_file)
 {
-  FileOutput fileOutput;
+  FileOutputThreadHandler fileOutput;
   std::string result;
   std::string goodResult{"bulk: cmd1, cmd2, cmd3"};
   std::list<std::string> testData{"cmd1", "cmd2", "cmd3"};
-  size_t timestamp = 123;
-  auto filename = FileOutput::MakeFilename(timestamp);
+  size_t timestamp {123};
+  unsigned short counter {0};
+  auto filename = MakeFilename(timestamp, std::this_thread::get_id(), counter);
 
   std::remove(filename.c_str());
 
@@ -326,7 +331,7 @@ BOOST_AUTO_TEST_CASE(file_output_to_locked_file)
   BOOST_REQUIRE_EQUAL(true, -1 != file_handler);
   BOOST_REQUIRE_EQUAL(true, -1 != flock( file_handler, LOCK_EX | LOCK_NB ));
   
-  BOOST_CHECK_THROW(fileOutput.Output(timestamp, testData), std::runtime_error);
+  BOOST_CHECK_THROW(fileOutput(std::make_pair(timestamp, testData)), std::runtime_error);
   
   flock(file_handler, LOCK_UN | LOCK_NB);
   close(file_handler);
@@ -334,4 +339,3 @@ BOOST_AUTO_TEST_CASE(file_output_to_locked_file)
 }
 
 BOOST_AUTO_TEST_SUITE_END()
-*/

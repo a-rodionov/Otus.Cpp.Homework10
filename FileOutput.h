@@ -5,9 +5,9 @@
 #include "ThreadPool.h"
 #include "Statistics.h"
 
-std::string MakeFilename(std::size_t timestamp, const std::thread::id& id) {
+std::string MakeFilename(std::size_t timestamp, const std::thread::id& id, unsigned short counter) {
   std::stringstream filename;
-  filename << "bulk" << std::to_string(timestamp) << "_" << id << ".log";
+  filename << "bulk" << std::to_string(timestamp) << "_" << id << "_" << counter << ".log";
   return filename.str();
 }
 
@@ -17,7 +17,7 @@ class FileOutputThreadHandler : public BaseStatistics
 public:
 
   void operator()(const std::pair<std::size_t, std::list<std::string>>& data) {
-    std::ofstream ofs{MakeFilename(data.first, std::this_thread::get_id()).c_str(),
+    std::ofstream ofs{MakeFilename(data.first, std::this_thread::get_id(), counter++).c_str(),
                       std::ofstream::out | std::ofstream::trunc};
     if(ofs.fail())
       throw std::runtime_error("FileOutput::Output. Can't open file for output.");
@@ -29,6 +29,10 @@ public:
     ++statistics.blocks;
     statistics.commands += data.second.size();
   }
+
+private:
+
+  unsigned short counter{0};
 };
 
 class FileOutput : public IOutput, public ThreadPool<std::pair<std::size_t, std::list<std::string>>, FileOutputThreadHandler>
