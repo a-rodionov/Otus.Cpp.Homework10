@@ -14,27 +14,38 @@ public:
     : done{false} {}
 
   ~ThreadPool() {
-    StopWorkers();
+    JoinWorkers();
   }
+
+  ThreadPool(const ThreadPool&) = delete;
+  ThreadPool& operator=(const ThreadPool&) = delete;
 
   template<typename ... Args>
   void AddWorker(Args&& ... args) {
     std::lock_guard<std::mutex> lk(threads_mutex);
     thread_handlers.push_back(std::make_shared<ThreadHandler>(std::forward<Args>(args)...));
-    threads.push_back(std::thread(&ThreadPool::WorkerThread, this, thread_handlers.back()));
+    try {
+      threads.push_back(std::thread(&ThreadPool::WorkerThread, this, thread_handlers.back()));
+    }
+    catch(...) {
+      thread_handlers.pop_back();
+      throw;
+    }
   }
 
-  std::list<std::shared_ptr<ThreadHandler>> StopWorkers() {
+  auto StopWorkers() {
     std::lock_guard<std::mutex> lk(threads_mutex);
-    if(threads.empty())
-      return thread_handlers;
-    done = true;
-    queue_event.notify_all();
-    for(auto& thread : threads) {
-      if(thread.joinable())
-        thread.join();
-    }
-    return thread_handlers;
+    JoinWorkers();
+    auto thread_handlers_copy{thread_handlers};
+    thread_handlers.clear();
+    threads.clear();
+    done = false;
+    return thread_handlers_copy;
+  }
+
+  auto WorkersCount() const {
+    std::lock_guard<std::mutex> lk(threads_mutex);
+    return threads.size();
   }
 
   void PushMessage(const MessageType& message) {
@@ -51,6 +62,17 @@ public:
 
 private:
 
+  void JoinWorkers() {
+    if(threads.empty())
+      return;
+    done = true;
+    queue_event.notify_all();
+    for(auto& thread : threads) {
+      if(thread.joinable())
+        thread.join();
+    }
+  }
+
   void WorkerThread(const std::shared_ptr<ThreadHandler>& thread_handler) {
     while(true) {
       std::unique_lock<std::mutex> lk(queue_mutex);
@@ -66,7 +88,7 @@ private:
 
   std::vector<std::thread> threads;
   std::list<std::shared_ptr<ThreadHandler>> thread_handlers;
-  std::mutex threads_mutex;
+  mutable std::mutex threads_mutex;
   std::atomic_bool done;
 
   std::queue<MessageType> messages;

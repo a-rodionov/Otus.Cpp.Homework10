@@ -5,24 +5,38 @@
 #include "ThreadPool.h"
 #include "Statistics.h"
 
+struct ConsoleOutputSharedData {
+  ConsoleOutputSharedData(std::ostream& out)
+    : out{out} {}
+
+  std::ostream& out;
+  std::mutex ostream_mutex;
+};
+
+
+
 class ConsoleOutputThreadHandler : public BaseStatistics
 {
 
 public:
 
-  explicit ConsoleOutputThreadHandler(std::ostream& out)
-    : out{out} {}
+  explicit ConsoleOutputThreadHandler(const std::shared_ptr<ConsoleOutputSharedData>& consoleOutputSharedData)
+    : consoleOutputSharedData{consoleOutputSharedData} {}
 
   void operator()(const std::list<std::string>& data) {
-    Output(out, data);
+    std::unique_lock<std::mutex> lk(consoleOutputSharedData->ostream_mutex);
+    Output(consoleOutputSharedData->out, data);
+    lk.unlock();
     ++statistics.blocks;
     statistics.commands += data.size();
   }
 
 private:
 
-  std::ostream& out;
+  std::shared_ptr<ConsoleOutputSharedData> consoleOutputSharedData;
 };
+
+
 
 class ConsoleOutput : public IOutput, public ThreadPool<std::list<std::string>, ConsoleOutputThreadHandler>
 {
@@ -30,14 +44,14 @@ class ConsoleOutput : public IOutput, public ThreadPool<std::list<std::string>, 
 public:
 
   explicit ConsoleOutput(std::ostream& out, size_t threads_count = 1)
-    : out{out}
+    : consoleOutputSharedData{std::make_shared<ConsoleOutputSharedData>(out)}
   {
     for(decltype(threads_count) i{0}; i < threads_count; ++i)
       AddWorker();
   }
 
   void AddWorker() {
-    ThreadPool::AddWorker(out);
+    ThreadPool::AddWorker(consoleOutputSharedData);
   }
 
   void Output(const std::size_t timestamp, const std::list<std::string>& data) override {
@@ -46,5 +60,5 @@ public:
 
 private:
 
-  std::ostream& out;
+  std::shared_ptr<ConsoleOutputSharedData> consoleOutputSharedData;
 };

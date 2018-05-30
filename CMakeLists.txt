@@ -48,4 +48,7 @@ include (CPack)
 enable_testing()
 
 add_test(test_suite_internals bulkmt_test)
-add_test(fixture_test_suite_bulk bulkmt_test)
+add_test(fixture_test_suite_parser bulkmt_test)
+add_test(test_suite_file_output bulkmt_test)
+add_test(test_suite_thread_pool bulkmt_test)
+add_test(test_suite_multithread_file_output bulkmt_test)

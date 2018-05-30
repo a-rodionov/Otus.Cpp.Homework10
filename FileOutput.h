@@ -17,8 +17,8 @@ class FileOutputThreadHandler : public BaseStatistics
 public:
 
   void operator()(const std::pair<std::size_t, std::list<std::string>>& data) {
-    std::ofstream ofs{MakeFilename(data.first, std::this_thread::get_id(), counter++).c_str(),
-                      std::ofstream::out | std::ofstream::trunc};
+    auto filename = MakeFilename(data.first, std::this_thread::get_id(), counter++);
+    std::ofstream ofs{filename.c_str(), std::ofstream::out | std::ofstream::trunc};
     if(ofs.fail())
       throw std::runtime_error("FileOutput::Output. Can't open file for output.");
     Output(ofs, data.second);
@@ -28,11 +28,17 @@ public:
       throw std::runtime_error("FileOutput::Output. Failed to write to file.");
     ++statistics.blocks;
     statistics.commands += data.second.size();
+    processed_filenames.push_back(std::move(filename));
+  }
+
+  auto GetProcessedFilenames() const {
+    return processed_filenames;
   }
 
 private:
 
   unsigned short counter{0};
+  std::vector<std::string> processed_filenames;
 };
 
 class FileOutput : public IOutput, public ThreadPool<std::pair<std::size_t, std::list<std::string>>, FileOutputThreadHandler>
