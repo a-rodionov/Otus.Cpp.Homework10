@@ -25,7 +25,7 @@ public:
 
   void operator()(const std::list<std::string>& data) {
     std::unique_lock<std::mutex> lk(consoleOutputSharedData->ostream_mutex);
-    Output(consoleOutputSharedData->out, data);
+    OutputFormattedBulk(consoleOutputSharedData->out, data);
     lk.unlock();
     ++statistics.blocks;
     statistics.commands += data.size();

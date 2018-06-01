@@ -21,7 +21,7 @@ public:
     std::ofstream ofs{filename.c_str(), std::ofstream::out | std::ofstream::trunc};
     if(ofs.fail())
       throw std::runtime_error("FileOutput::Output. Can't open file for output.");
-    Output(ofs, data.second);
+    OutputFormattedBulk(ofs, data.second);
     auto is_failed = ofs.fail();
     ofs.close();
     if(is_failed)
