@@ -46,8 +46,9 @@ public:
   explicit ConsoleOutput(std::ostream& out, size_t threads_count = 1)
     : consoleOutputSharedData{std::make_shared<ConsoleOutputSharedData>(out)}
   {
-    for(decltype(threads_count) i{0}; i < threads_count; ++i)
+    for(decltype(threads_count) i{0}; i < threads_count; ++i) {
       AddWorker();
+    }
   }
 
   void AddWorker() {

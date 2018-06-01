@@ -14,18 +14,21 @@ int main(int argc, char const* argv[])
     unsigned long long block_size;
     try
     {
-      if(2 != argc)
+      if(2 != argc) {
         throw std::invalid_argument("");
+      }
 
       std::string digit_str{argv[1]};
       if(!std::all_of(std::cbegin(digit_str),
                       std::cend(digit_str),
-                      [](unsigned char symbol) { return std::isdigit(symbol); } ))
+                      [](unsigned char symbol) { return std::isdigit(symbol); } )) {
         throw std::invalid_argument("");
+      }
 
       block_size = std::stoull(digit_str);
-      if(0 == block_size)
+      if(0 == block_size) {
         throw std::invalid_argument("");
+      }
     }
     catch(...)
     {

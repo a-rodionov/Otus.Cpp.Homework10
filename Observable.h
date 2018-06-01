@@ -10,14 +10,16 @@ public:
 
   void Subscribe(const std::shared_ptr<T>& subscriber) {
     auto subscr = Find(subscriber);
-    if(std::cend(subscribers) == subscr)
+    if(std::cend(subscribers) == subscr) {
       subscribers.push_back(subscriber);
+    }
   }
 
   void Unsubscribe(const std::shared_ptr<T>& subscriber) {
     auto subscr = Find(subscriber);
-    if(std::cend(subscribers) != subscr)
+    if(std::cend(subscribers) != subscr) {
       subscribers.erase(subscr);
+    }
   }
 
 protected:
@@ -29,8 +31,9 @@ private:
   auto Find(const std::shared_ptr<T>& subscriber) {
     for(auto subscr = std::cbegin(subscribers); subscr != std::cend(subscribers); ++subscr) {
       auto subscriber_locked = subscr->lock();
-      if(subscriber_locked.get() == subscriber.get())
+      if(subscriber_locked.get() == subscriber.get()) {
         return subscr;
+      }
     }
     return std::cend(subscribers);
   }

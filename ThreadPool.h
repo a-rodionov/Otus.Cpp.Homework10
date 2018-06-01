@@ -66,13 +66,15 @@ public:
 private:
 
   void JoinWorkers() {
-    if(threads.empty())
+    if(threads.empty()) {
       return;
+    }
     done = true;
     queue_event.notify_all();
     for(auto& thread : threads) {
-      if(thread.joinable())
+      if(thread.joinable()) {
         thread.join();
+      }
     }
   }
 
@@ -81,8 +83,9 @@ private:
       while(true) {
         std::unique_lock<std::mutex> lk(queue_mutex);
         queue_event.wait(lk, [&](){ return (!messages.empty() || done); });
-        if(messages.empty())
+        if(messages.empty()) {
           break;
+        }
         auto message = messages.front();
         messages.pop();
         lk.unlock();
