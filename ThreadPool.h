@@ -3,6 +3,8 @@
 #include <thread>
 #include <condition_variable>
 #include <atomic>
+#include <vector>
+#include <list>
 #include <queue>
 
 template<typename MessageType, typename ThreadHandler>

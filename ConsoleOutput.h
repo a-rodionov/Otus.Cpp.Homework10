@@ -54,7 +54,7 @@ public:
     ThreadPool::AddWorker(consoleOutputSharedData);
   }
 
-  void Output(const std::size_t timestamp, const std::list<std::string>& data) override {
+  void Output(const std::size_t, const std::list<std::string>& data) override {
     PushMessage(data);
   }
 

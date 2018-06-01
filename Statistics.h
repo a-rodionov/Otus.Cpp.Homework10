@@ -8,6 +8,7 @@ struct Statistics {
 std::ostream& operator<<(std::ostream& out, const Statistics& statistics) {
   out << statistics.blocks << " блок, "
       << statistics.commands << " команд";
+  return out;
 }
 
 class BaseStatistics {
