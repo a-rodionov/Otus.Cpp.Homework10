@@ -11,22 +11,20 @@ public:
   void Process(std::istream& in) {
     for(std::string command; std::getline(in, command);) {
       ++processedLines;
-      if(!command.empty()) {
-        if("{" == command) {
-          if(0 == open_brace_count++) {
-            BlockStart();
-          }
-          continue;
+      if("{" == command) {
+        if(0 == open_brace_count++) {
+          BlockStart();
         }
-        if("}" == command) {
-          if(0 == open_brace_count){
-            BlockEnd();
-          }
-          else if(0 == --open_brace_count) {
-            BlockEnd();
-          }
-          continue;
+        continue;
+      }
+      if("}" == command) {
+        if(0 == open_brace_count){
+          BlockEnd();
         }
+        else if(0 == --open_brace_count) {
+          BlockEnd();
+        }
+        continue;
       }
       Push(command);
     }
