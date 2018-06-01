@@ -31,7 +31,7 @@ private:
   auto Find(const std::shared_ptr<T>& subscriber) {
     for(auto subscr = std::cbegin(subscribers); subscr != std::cend(subscribers); ++subscr) {
       auto subscriber_locked = subscr->lock();
-      if(subscriber_locked.get() == subscriber.get()) {
+      if(subscriber_locked == subscriber) {
         return subscr;
       }
     }
