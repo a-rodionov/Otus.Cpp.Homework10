@@ -48,6 +48,15 @@ private:
   std::thread::id thread_id;
 };
 
+class exception_thrower_thread_worker
+{
+public:
+
+  void operator()(const std::string&) {
+    throw std::runtime_error("Exception is thrown by exception_thrower_thread_worker::operator()");
+  }
+};
+
 BOOST_AUTO_TEST_SUITE(test_suite_main)
 
 BOOST_AUTO_TEST_CASE(adding_worker_threads)
@@ -120,5 +129,14 @@ BOOST_AUTO_TEST_CASE(pushing_messages_after_stop)
   BOOST_REQUIRE_EQUAL(2, thread_handlers.front()->GetCallsCount());
   BOOST_REQUIRE_EQUAL("1st part.2nd part.", thread_handlers.front()->GetConcatenatedString());
 }
+
+BOOST_AUTO_TEST_CASE(handle_exception_from_thread)
+{
+  ThreadPool<std::string, exception_thrower_thread_worker> thread_pool;
+  thread_pool.PushMessage("1st part.");
+  thread_pool.AddWorker();
+  auto thread_handlers = thread_pool.StopWorkers();
+}
+
 
 BOOST_AUTO_TEST_SUITE_END()

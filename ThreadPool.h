@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iostream>
 #include <thread>
 #include <condition_variable>
 #include <atomic>
@@ -76,15 +77,21 @@ private:
   }
 
   void WorkerThread(const std::shared_ptr<ThreadHandler>& thread_handler) {
-    while(true) {
-      std::unique_lock<std::mutex> lk(queue_mutex);
-      queue_event.wait(lk, [&](){ return (!messages.empty() || done); });
-      if(messages.empty())
-        break;
-      auto message = messages.front();
-      messages.pop();
-      lk.unlock();
-      (*thread_handler)(message);
+    try {
+      while(true) {
+        std::unique_lock<std::mutex> lk(queue_mutex);
+        queue_event.wait(lk, [&](){ return (!messages.empty() || done); });
+        if(messages.empty())
+          break;
+        auto message = messages.front();
+        messages.pop();
+        lk.unlock();
+        (*thread_handler)(message);
+      }
+    }
+    catch (const std::exception& e)
+    {
+      std::cerr << e.what() << std::endl;
     }
   }
 
