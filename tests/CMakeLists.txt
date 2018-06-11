@@ -5,7 +5,8 @@ function(test name)
   target_compile_definitions(${name} PRIVATE BOOST_TEST_DYN_LINK)
   target_include_directories(${name} PRIVATE ${PROJECT_SOURCE_DIR})
   target_link_libraries (${name} 
-      Boost::unit_test_framework
+      #Boost::unit_test_framework
+      ${Boost_LIBRARIES}
       ${CMAKE_THREAD_LIBS_INIT}
   )
   add_test(${name} ${CMAKE_BINARY_DIR}/bin/${name})

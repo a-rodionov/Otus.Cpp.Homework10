@@ -30,25 +30,25 @@ BOOST_AUTO_TEST_CASE(verify_statistics)
 
   commandProcessor->Process(iss);
 
-  auto thread_handlers = fileOutput->StopWorkers();
+  auto file_statistics = fileOutput->StopWorkers();
 
   auto main_statisctics = storage->GetStatisctics();
   decltype(main_statisctics) threads_statisctics;
-  for(const auto& handler : thread_handlers) {
-    auto statistic = handler->GetStatisctics();
-    threads_statisctics.commands += statistic.commands;
-    threads_statisctics.blocks += statistic.blocks;
-
-    auto filenames = handler->GetProcessedFilenames();
-    for(const auto& filename : filenames) {
-      std::remove(filename.c_str());
-    }
+  for(const auto& statistic : file_statistics) {
+    threads_statisctics.commands += statistic.second.commands;
+    threads_statisctics.blocks += statistic.second.blocks;
   }
+
+  auto filenames = fileOutput->GetProcessedFilenames();
+  for(const auto& filename : filenames) {
+    std::remove(filename.c_str());
+  }
+
   BOOST_REQUIRE_EQUAL(main_statisctics.commands, threads_statisctics.commands);
   BOOST_REQUIRE_EQUAL(main_statisctics.blocks, threads_statisctics.blocks);
 
-  BOOST_REQUIRE(main_statisctics.commands != thread_handlers.front()->GetStatisctics().commands);
-  BOOST_REQUIRE(main_statisctics.blocks != thread_handlers.front()->GetStatisctics().blocks);
+  BOOST_REQUIRE(main_statisctics.commands != std::cbegin(file_statistics)->second.commands);
+  BOOST_REQUIRE(main_statisctics.blocks != std::cbegin(file_statistics)->second.blocks);
 }
 
 BOOST_AUTO_TEST_CASE(verify_unique_filenames)
@@ -73,13 +73,8 @@ BOOST_AUTO_TEST_CASE(verify_unique_filenames)
 
   commandProcessor->Process(iss);
 
-  auto thread_handlers = fileOutput->StopWorkers();
-
-  decltype(std::declval<FileOutputThreadHandler>().GetProcessedFilenames()) filenames;
-  for(const auto& handler : thread_handlers) {
-    auto thread_filenames = handler->GetProcessedFilenames();
-    std::copy(std::cbegin(thread_filenames), std::cend(thread_filenames), std::back_inserter(filenames));
-  }
+  auto file_statistics = fileOutput->StopWorkers();
+  auto filenames = fileOutput->GetProcessedFilenames();
   for(const auto& filename : filenames) {
     std::remove(filename.c_str());
   }

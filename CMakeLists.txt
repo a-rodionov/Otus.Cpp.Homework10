@@ -9,7 +9,7 @@ endif()
 project(bulkmt VERSION 1.0.${PATCH_VERSION})
 
 find_package(Threads)
-find_package(Boost COMPONENTS unit_test_framework REQUIRED)
+find_package(Boost COMPONENTS unit_test_framework system thread REQUIRED)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
@@ -23,6 +23,7 @@ add_compile_options(-Wpedantic -Wall -Wextra)
 
 target_link_libraries(bulkmt
   ${CMAKE_THREAD_LIBS_INIT}
+  ${Boost_LIBRARIES}
 )
 
 install(TARGETS bulkmt RUNTIME DESTINATION bin)

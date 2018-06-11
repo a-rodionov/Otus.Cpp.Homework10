@@ -49,21 +49,19 @@ int main(int argc, char const* argv[])
 
     commandProcessor->Process(std::cin);
 
-    auto console_hadlers = consoleOutput->StopWorkers();
-    auto file_hadlers = fileOutput->StopWorkers();
+    auto console_statistics = consoleOutput->StopWorkers();
+    auto file_statistics = fileOutput->StopWorkers();
 
     std::cout << "main поток - " << commandProcessor->GetProcessedLines() << " строк, "
               << storage->GetStatisctics() << std::endl;
 
-    for(const auto& handler : console_hadlers) {
-      auto statistic = handler->GetStatisctics();
-      std::cout << "log поток - " << statistic << std::endl;
+    for(const auto& thread_statistics : console_statistics) {
+      std::cout << "log поток - " << thread_statistics.second << std::endl;
     }
 
     auto i{1};
-    for(const auto& handler : file_hadlers) {
-      auto statistic = handler->GetStatisctics();
-      std::cout << "file" << i++ << " поток - " << statistic << std::endl;
+    for(const auto& thread_statistics : file_statistics) {
+      std::cout << "file" << i++ << " поток - " << thread_statistics.second << std::endl;
     }
   }
   catch (const std::exception& e)
