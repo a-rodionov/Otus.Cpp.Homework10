@@ -73,18 +73,23 @@ public:
       // Каждый поток модифицирует только свою статистику, поэтому безопасно ее модифицировать без блокировки.
       ++statistics->second.blocks;
       statistics->second.commands += data.size();
+
+      std::lock_guard<std::shared_timed_mutex> lock_filenames(filenames_mutex);
       processed_filenames.push_back(MakeFilename(timestamp, unique_counter));
     });
   }
 
   auto GetProcessedFilenames() const {
+    std::shared_lock<std::shared_timed_mutex> lock_filenames(filenames_mutex);
     return processed_filenames;
   }
 
 private:
 
   std::map<std::thread::id, Statistics> threads_statistics;
+  std::shared_timed_mutex statistics_mutex;
+
   std::vector<std::string> processed_filenames;
   std::atomic_ushort counter{0};
-  std::shared_timed_mutex statistics_mutex;
+  mutable std::shared_timed_mutex filenames_mutex;
 };

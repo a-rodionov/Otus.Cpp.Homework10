@@ -7,6 +7,7 @@
 #include <mutex>
 #include <condition_variable>
 #include <boost/asio.hpp>
+#include <boost/log/trivial.hpp>
 
 class ThreadPool {
 
@@ -50,6 +51,7 @@ public:
         task();
       }
       catch (std::exception& exc) {
+        BOOST_LOG_TRIVIAL(error) << exc.what();
         std::lock_guard<std::mutex> lk(exceptions_mutex);
         exceptions.push(std::current_exception());
       }
@@ -57,8 +59,8 @@ public:
   }
 
   std::exception_ptr GetLastException() {
-    std::lock_guard<std::mutex> lk(exceptions_mutex);
     std::exception_ptr exc;
+    std::lock_guard<std::mutex> lk(exceptions_mutex);
     if (!exceptions.empty()) {
       exc = exceptions.front();
       exceptions.pop();

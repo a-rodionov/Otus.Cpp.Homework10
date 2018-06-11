@@ -4,8 +4,7 @@
 #include "ConsoleOutput.h"
 #include "FileOutput.h"
 #include "CommandProcessor.h"
-
-
+#include "Logger.h"
 
 int main(int argc, char const* argv[])
 {
@@ -37,6 +36,8 @@ int main(int argc, char const* argv[])
                               + " in decimal base.";
       throw std::invalid_argument(error_msg);
     }
+
+    Logger::Instance();
 
     auto commandProcessor = std::make_unique<CommandProcessor>();
     auto storage = std::make_shared<Storage>(block_size);
