@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <vector>
+#include <queue>
 #include <thread>
 #include <mutex>
 #include <condition_variable>
@@ -44,7 +45,25 @@ public:
 
   template<typename Task>
   void AddTask(Task&& task) {
-    io_service.post(std::forward<Task>(task));
+    io_service.post([this, task] () {
+      try {
+        task();
+      }
+      catch (std::exception& exc) {
+        std::lock_guard<std::mutex> lk(exceptions_mutex);
+        exceptions.push(std::current_exception());
+      }
+    });
+  }
+
+  std::exception_ptr GetLastException() {
+    std::lock_guard<std::mutex> lk(exceptions_mutex);
+    std::exception_ptr exc;
+    if (!exceptions.empty()) {
+      exc = exceptions.front();
+      exceptions.pop();
+    }
+    return exc;
   }
 
 private:
@@ -67,6 +86,6 @@ private:
   std::vector<std::thread> threads;
   mutable std::mutex threads_mutex;
 
-  std::atomic_bool is_workers_stopping{false};
-  std::condition_variable_any workers_stopped_event;
+  std::queue<std::exception_ptr> exceptions;
+  std::mutex exceptions_mutex;
 };

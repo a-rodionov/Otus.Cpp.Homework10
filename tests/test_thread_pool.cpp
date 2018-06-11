@@ -7,16 +7,6 @@
 
 using namespace std::chrono_literals;
 
-/*
-class exception_thrower_thread_worker
-{
-public:
-
-  void operator()(const std::string&) {
-    throw std::runtime_error("Exception is thrown by exception_thrower_thread_worker::operator()");
-  }
-};
-*/
 
 BOOST_AUTO_TEST_SUITE(test_suite_main)
 
@@ -88,14 +78,18 @@ BOOST_AUTO_TEST_CASE(adding_tasks_after_stop)
 
   BOOST_REQUIRE_EQUAL("1st part.2nd part.", result);
 }
-/*
+
 BOOST_AUTO_TEST_CASE(handle_exception_from_thread)
 {
-  ThreadPool<std::string, exception_thrower_thread_worker> thread_pool;
-  thread_pool.PushMessage("1st part.");
+  ThreadPool thread_pool;
   thread_pool.AddWorker();
-  auto thread_handlers = thread_pool.StopWorkers();
+  thread_pool.AddTask([](){ throw std::runtime_error("Exception from thread pool."); });
+  thread_pool.StopWorkers();
+
+  auto exc = thread_pool.GetLastException();
+  BOOST_REQUIRE(nullptr != exc);
+  BOOST_CHECK_THROW(std::rethrow_exception(exc), std::runtime_error);
 }
-*/
+
 
 BOOST_AUTO_TEST_SUITE_END()
