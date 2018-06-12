@@ -54,7 +54,18 @@ public:
       if(is_new_thread_force_terminate)
         return;
       is_new_thread_started = true;
-      io_service.run();
+
+      for(;;) {
+        try {
+          io_service.run();
+          break;
+        }
+        catch (std::exception& exc) {
+          BOOST_LOG_TRIVIAL(error) << exc.what();
+          std::lock_guard<std::mutex> lk(exceptions_mutex);
+          exceptions.push(std::current_exception());
+        }
+      }
     });
 
     try {
@@ -81,6 +92,7 @@ public:
     std::lock_guard<std::mutex> lk(threads_mutex);
     JoinWorkers();
     threads.clear();
+    io_service.reset();
   }
 
   auto WorkersCount() const {
@@ -90,16 +102,7 @@ public:
 
   template<typename Task>
   void AddTask(Task&& task) {
-    io_service.post([this, task] () {
-      try {
-        task();
-      }
-      catch (std::exception& exc) {
-        BOOST_LOG_TRIVIAL(error) << exc.what();
-        std::lock_guard<std::mutex> lk(exceptions_mutex);
-        exceptions.push(std::current_exception());
-      }
-    });
+    io_service.post(task);
   }
 
   std::exception_ptr GetLastException() {

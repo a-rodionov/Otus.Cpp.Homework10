@@ -19,7 +19,6 @@ BOOST_AUTO_TEST_CASE(verify_statistics)
                       "cmd11\ncmd12\ncmd13\n"
                       "cmd14\n"};
   std::istringstream iss(testData);
-  std::ostringstream oss;
 
   auto commandProcessor = std::make_unique<CommandProcessor>();
   auto storage = std::make_shared<Storage>(3);
@@ -62,7 +61,6 @@ BOOST_AUTO_TEST_CASE(verify_unique_filenames)
                       "cmd20\ncmd21\ncmd22\n"
                       "cmd23\n"};
   std::istringstream iss(testData);
-  std::ostringstream oss;
 
   auto commandProcessor = std::make_unique<CommandProcessor>();
   auto storage = std::make_shared<Storage>(3);

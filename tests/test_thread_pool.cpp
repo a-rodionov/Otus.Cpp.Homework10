@@ -79,6 +79,24 @@ BOOST_AUTO_TEST_CASE(adding_tasks_after_stop)
   BOOST_REQUIRE_EQUAL("1st part.2nd part.", result);
 }
 
+BOOST_AUTO_TEST_CASE(restarting)
+{
+  ThreadPool thread_pool;
+  std::string result;
+
+  thread_pool.AddWorker();
+  thread_pool.AddTask([&result](){ result += "1st part."; });
+  thread_pool.AddTask([&result](){ result += "2nd part."; });
+  thread_pool.StopWorkers();
+  BOOST_REQUIRE_EQUAL(0, thread_pool.WorkersCount());
+
+  thread_pool.AddWorker();
+  thread_pool.AddTask([&result](){ result += "Data processed after adding workers."; });
+  thread_pool.StopWorkers();
+
+  BOOST_REQUIRE_EQUAL("1st part.2nd part.Data processed after adding workers.", result);
+}
+
 BOOST_AUTO_TEST_CASE(handle_exception_from_thread)
 {
   ThreadPool thread_pool;
