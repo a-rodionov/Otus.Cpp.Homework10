@@ -84,7 +84,7 @@ public:
     return processed_filenames;
   }
 
-private:
+protected:
 
   std::map<std::thread::id, Statistics> threads_statistics;
   std::shared_timed_mutex statistics_mutex;
