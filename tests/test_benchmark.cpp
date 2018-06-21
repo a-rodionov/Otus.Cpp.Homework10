@@ -26,7 +26,7 @@ public:
     return FileOutput::StopWorkers();
   }
 
-  void Output(const std::size_t timestamp, const std::list<std::string>& data) override {
+  void Output(const std::size_t timestamp, std::shared_ptr<const std::list<std::string>> data) override {
     AddTask([this, timestamp, data]() {
 
       std::unique_lock<std::shared_timed_mutex> lock_filenames(filenames_mutex);
@@ -44,14 +44,14 @@ public:
         ++statistics->second.blocks;
 
         for(auto i{0}; i < 10000; ++i) {
-          std::for_each(std::cbegin(data),
-                        std::cend(data),
+          std::for_each(std::cbegin(*data),
+                        std::cend(*data),
                         [&statistics] (const auto& str) {
                           statistics->second.commands += std::hash<std::string>()(str);
                         });
         }
 
-        WriteBulkToFile(timestamp, data, 0);
+        WriteBulkToFile(timestamp, *data, 0);
       }
     });
   }
@@ -66,7 +66,7 @@ static char buffer_file_io[1024] __attribute__ ((__aligned__ (1024)));
 void benchmark_iteration(size_t threads_count,
                          std::chrono::seconds iteration_period) {
   FileOutputWithCPUOverhead thread_pool;
-  std::list<std::string> data{"cmd1", "cmd2", "cmd3"};
+  std::shared_ptr<std::list<std::string>> data{ new std::list<std::string>{"cmd1", "cmd2", "cmd3"}};
 
   for(decltype(threads_count) i{0}; i < threads_count; ++i) {
     thread_pool.AddWorker();
@@ -100,7 +100,7 @@ void benchmark_iteration(size_t threads_count,
                          int fd,
                          size_t filesize) {
   FileOutputWithCPUOverhead thread_pool;
-  std::list<std::string> data{"cmd1", "cmd2", "cmd3"};
+  std::shared_ptr<std::list<std::string>> data{ new std::list<std::string>{"cmd1", "cmd2", "cmd3"}};
   size_t read_counts{0};
 
   for(decltype(threads_count) i{0}; i < threads_count; ++i) {
