@@ -72,7 +72,7 @@ public:
     return threads_statistics_copy;
   }
 
-  void Output(const std::size_t, std::shared_ptr<const std::list<std::string>> data) override {
+  void Output(const std::size_t, std::shared_ptr<const std::list<std::string>>& data) override {
     AddTask([this, data]() {
       auto out = shared_ostream->GetOstreamLock();
       OutputFormattedBulk(out.first, *data);

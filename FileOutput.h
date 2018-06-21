@@ -60,7 +60,7 @@ public:
     return threads_statistics_copy;
   }
 
-  void Output(const std::size_t timestamp, std::shared_ptr<const std::list<std::string>> data) override {
+  void Output(const std::size_t timestamp, std::shared_ptr<const std::list<std::string>>& data) override {
     unsigned short unique_counter = counter++;
     AddTask([this, timestamp, data, unique_counter]() {
       WriteBulkToFile(timestamp, *data, unique_counter);
