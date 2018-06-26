@@ -190,5 +190,5 @@ private:
   std::atomic_bool is_new_thread_on_pause;
   std::atomic_bool is_new_thread_force_terminate;
   std::atomic_bool is_new_thread_started;
-  std::atomic_bool is_error_log_working;
+  std::atomic_bool is_error_log_working{true};
 };
